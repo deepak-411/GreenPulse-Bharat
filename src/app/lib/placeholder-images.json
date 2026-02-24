@@ -1,0 +1,11 @@
+
+{
+  "placeholderImages": [
+    {
+      "id": "hackathon-banner",
+      "description": "Hack For Green Bharat Hackathon Banner",
+      "imageUrl": "https://picsum.photos/seed/greenbharat/1200/400",
+      "imageHint": "hackathon sustainability"
+    }
+  ]
+}

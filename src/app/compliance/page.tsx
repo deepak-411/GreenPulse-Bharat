@@ -1,7 +1,8 @@
+
 "use client"
 
 import { useState, useRef, useEffect } from "react"
-import { ShieldCheck, Send, Bot, User, Loader2, Info, Sparkles, ChevronRight } from "lucide-react"
+import { ShieldCheck, Send, Bot, User, Loader2, Info, Sparkles, ChevronRight, MessageSquare } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { ScrollArea } from "@/components/ui/scroll-area"
@@ -17,12 +18,7 @@ type Message = {
 
 export default function ComplianceAssistant() {
   const [input, setInput] = useState("")
-  const [messages, setMessages] = useState<Message[]>([
-    { 
-      role: "assistant", 
-      content: "Hello! I am GreenPulse Bharat AI. I can audit your shipments or factory compliance based on live regulatory data. What would you like to check?" 
-    }
-  ])
+  const [messages, setMessages] = useState<Message[]>([])
   const [suggestions, setSuggestions] = useState<string[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [isSuggesting, setIsSuggesting] = useState(false)
@@ -101,60 +97,77 @@ export default function ComplianceAssistant() {
         {/* Main Chat Area */}
         <div className="flex-1 flex flex-col glass-card rounded-2xl border-0 overflow-hidden">
           <ScrollArea ref={scrollRef} className="flex-1 p-6">
-            <div className="flex flex-col gap-6">
-              {messages.map((msg, i) => (
-                <div key={i} className={`flex gap-4 ${msg.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
-                  <div className={`h-10 w-10 shrink-0 rounded-lg flex items-center justify-center ${msg.role === 'assistant' ? 'bg-primary/20' : 'bg-accent/20'}`}>
-                    {msg.role === 'assistant' ? <Bot className="h-6 w-6 text-primary" /> : <User className="h-6 w-6 text-accent" />}
-                  </div>
-                  <div className={`flex flex-col gap-2 max-w-[80%] ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
-                    <div className={`p-4 rounded-2xl text-sm leading-relaxed ${msg.role === 'assistant' ? 'bg-white/5 border border-white/10' : 'emerald-gradient text-white'}`}>
-                      {msg.content}
-                      
-                      {msg.data && (
-                        <div className="mt-4 pt-4 border-t border-white/10 space-y-3">
-                          <div className="flex items-center gap-2">
-                            <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Verification:</span>
-                            <Badge className={`${msg.data.isCompliant ? 'bg-accent/20 text-accent' : 'bg-red-500/20 text-red-400'} border-0`}>
-                              {msg.data.isCompliant ? 'Compliant' : 'Non-Compliant'}
-                            </Badge>
-                          </div>
-                          {msg.data.citations.length > 0 && (
-                            <div className="flex flex-col gap-1">
-                              <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Verified References:</span>
-                              {msg.data.citations.map((cite, j) => (
-                                <div key={j} className="text-xs flex items-center gap-1 opacity-80 italic">
-                                  <Info className="h-3 w-3" /> {cite}
-                                </div>
-                              ))}
+            {messages.length === 0 ? (
+              <div className="h-full flex flex-col items-center justify-center text-center p-8 gap-4 opacity-60">
+                <div className="p-4 bg-white/5 rounded-full">
+                  <Bot className="h-12 w-12 text-accent" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold">Ready for Audit</h3>
+                  <p className="text-sm max-w-xs mx-auto">
+                    Ask me about shipment compliance or factory emission norms. I verify everything against live policy documents.
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <div className="flex flex-col gap-6">
+                {messages.map((msg, i) => (
+                  <div key={i} className={`flex gap-4 ${msg.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
+                    <div className={`h-10 w-10 shrink-0 rounded-lg flex items-center justify-center ${msg.role === 'assistant' ? 'bg-primary/20' : 'bg-accent/20'}`}>
+                      {msg.role === 'assistant' ? <Bot className="h-6 w-6 text-primary" /> : <User className="h-6 w-6 text-accent" />}
+                    </div>
+                    <div className={`flex flex-col gap-2 max-w-[80%] ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
+                      <div className={`p-4 rounded-2xl text-sm leading-relaxed ${msg.role === 'assistant' ? 'bg-white/5 border border-white/10' : 'emerald-gradient text-white'}`}>
+                        {msg.content}
+                        
+                        {msg.data && (
+                          <div className="mt-4 pt-4 border-t border-white/10 space-y-3">
+                            <div className="flex items-center gap-2">
+                              <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Verification:</span>
+                              <Badge className={`${msg.data.isCompliant ? 'bg-accent/20 text-accent' : 'bg-red-500/20 text-red-400'} border-0`}>
+                                {msg.data.isCompliant ? 'Compliant' : 'Non-Compliant'}
+                              </Badge>
                             </div>
-                          )}
-                        </div>
-                      )}
+                            {msg.data.citations.length > 0 && (
+                              <div className="flex flex-col gap-1">
+                                <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Verified References:</span>
+                                {msg.data.citations.map((cite, j) => (
+                                  <div key={j} className="text-xs flex items-center gap-1 opacity-80 italic">
+                                    <Info className="h-3 w-3" /> {cite}
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
-              {isLoading && (
-                <div className="flex gap-4">
-                  <div className="h-10 w-10 shrink-0 rounded-lg bg-primary/20 flex items-center justify-center">
-                    <Bot className="h-6 w-6 text-primary" />
+                ))}
+                {isLoading && (
+                  <div className="flex gap-4">
+                    <div className="h-10 w-10 shrink-0 rounded-lg bg-primary/20 flex items-center justify-center">
+                      <Bot className="h-6 w-6 text-primary" />
+                    </div>
+                    <div className="p-4 rounded-2xl bg-white/5 border border-white/10 flex items-center gap-3">
+                      <Loader2 className="h-4 w-4 animate-spin text-accent" />
+                      <span className="text-sm italic text-muted-foreground">Verifying against regulatory database...</span>
+                    </div>
                   </div>
-                  <div className="p-4 rounded-2xl bg-white/5 border border-white/10 flex items-center gap-3">
-                    <Loader2 className="h-4 w-4 animate-spin text-accent" />
-                    <span className="text-sm italic text-muted-foreground">Verifying against regulatory database...</span>
-                  </div>
-                </div>
-              )}
-            </div>
+                )}
+              </div>
+            )}
           </ScrollArea>
 
           <div className="p-4 bg-white/5 border-t border-white/10">
             {suggestions.length > 0 && (
               <div className="flex flex-wrap gap-2 mb-4">
+                <div className="flex items-center gap-2 text-xs text-muted-foreground font-bold mr-2">
+                  <Sparkles className="h-3 w-3 text-accent" /> AI Suggested:
+                </div>
                 {isSuggesting ? (
                   <div className="flex items-center gap-2 text-xs text-muted-foreground animate-pulse">
-                    <Sparkles className="h-3 w-3" /> Generating suggestions...
+                    Generating...
                   </div>
                 ) : (
                   suggestions.map((suggestion, idx) => (
@@ -162,7 +175,7 @@ export default function ComplianceAssistant() {
                       key={idx} 
                       variant="outline" 
                       size="sm" 
-                      className="text-[10px] h-7 bg-white/5 border-white/10 hover:bg-accent/10 hover:border-accent/30"
+                      className="text-[10px] h-7 bg-white/5 border-white/10 hover:bg-accent/10 hover:border-accent/30 rounded-full"
                       onClick={() => handleSend(suggestion)}
                       disabled={isLoading}
                     >
@@ -178,7 +191,7 @@ export default function ComplianceAssistant() {
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-                placeholder="Type a compliance query..."
+                placeholder="Type a compliance query or pick a suggestion..."
                 className="pr-12 h-12 bg-background border-border focus-visible:ring-accent"
               />
               <Button 
@@ -197,41 +210,26 @@ export default function ComplianceAssistant() {
         <div className="hidden md:flex flex-col gap-6 w-80">
           <div className="glass-card p-6 rounded-2xl border-0">
             <h3 className="font-bold mb-4 flex items-center gap-2">
-              <Sparkles className="h-5 w-5 text-accent" />
-              AI Insights
+              <MessageSquare className="h-5 w-5 text-accent" />
+              How it works
             </h3>
             <div className="space-y-4">
               <p className="text-xs text-muted-foreground leading-relaxed">
-                Our auditor uses Retrieval-Augmented Generation (RAG) to ensure every answer is backed by verified government policy documents.
+                Our auditor uses **Retrieval-Augmented Generation (RAG)**. It searches national environmental policy docs in real-time to answer your queries with citations.
               </p>
               <div className="pt-4 border-t border-white/10">
-                <span className="text-[10px] uppercase font-bold text-muted-foreground block mb-2">Live Policy Sources</span>
+                <span className="text-[10px] uppercase font-bold text-muted-foreground block mb-2">Policy Datasets</span>
                 <div className="flex flex-col gap-2">
                   <div className="flex items-center gap-2 text-xs">
                     <div className="h-1.5 w-1.5 rounded-full bg-accent" />
-                    CPCB Emission Norms 2024
+                    CPCB Norms 2024
                   </div>
                   <div className="flex items-center gap-2 text-xs">
                     <div className="h-1.5 w-1.5 rounded-full bg-accent" />
-                    Ministry of Transport Guidelines
+                    Logistics Emissions v2
                   </div>
                 </div>
               </div>
-            </div>
-          </div>
-
-          <div className="glass-card p-6 rounded-2xl border-0 flex-1">
-            <h3 className="font-bold mb-4">Quick Actions</h3>
-            <div className="space-y-2">
-              {[
-                "Policy Impact Simulation",
-                "Export Audit Logs",
-                "Request Manual Review"
-              ].map((action, i) => (
-                <Button key={i} variant="ghost" className="w-full justify-between text-xs h-9 hover:bg-white/5">
-                  {action} <ChevronRight className="h-3 w-3" />
-                </Button>
-              ))}
             </div>
           </div>
         </div>
