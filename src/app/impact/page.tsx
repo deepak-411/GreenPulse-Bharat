@@ -1,9 +1,10 @@
 "use client"
 
-import { Sprout, TrendingDown, IndianRupee, TreeDeciduous, Zap, Droplets, ArrowUpRight, BarChart3 } from "lucide-react"
+import { Sprout, TrendingDown, IndianRupee, TreeDeciduous, Zap, ArrowUpRight, BarChart3, Activity } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
+import { Button } from "@/components/ui/button"
 
 export default function ImpactVisualization() {
   return (
