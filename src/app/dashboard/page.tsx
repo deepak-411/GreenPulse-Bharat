@@ -37,7 +37,7 @@ import {
   ChartTooltipContent 
 } from "@/components/ui/chart"
 
-const liveData = [
+const initialChartData = [
   { time: "10:00", value: 65 },
   { time: "10:05", value: 68 },
   { time: "10:10", value: 62 },
@@ -99,7 +99,7 @@ export default function Dashboard() {
         <div className="flex-1 flex flex-col items-center justify-center py-24 glass-card rounded-3xl border-dashed border-2 border-white/10">
           <Zap className="h-16 w-16 text-muted-foreground mb-4 opacity-20" />
           <h2 className="text-2xl font-bold text-muted-foreground">Data Stream Inactive</h2>
-          <p className="text-muted-foreground mb-6 text-center max-w-md px-6">Connect to the national sovereign stream to view real-time metrics and manual sensor analysis. No data exists until connection.</p>
+          <p className="text-muted-foreground mb-6 text-center max-w-md px-6">No data exists until connection. Please initialize the national sovereign stream to view real-time metrics.</p>
           <Button onClick={handleConnect} size="lg" className="emerald-gradient border-0 font-bold px-10">
             Initialize Real-time Ingestion
           </Button>
@@ -192,7 +192,7 @@ export default function Dashboard() {
                 <div className="h-[300px] w-full">
                   <ChartContainer config={chartConfig}>
                     <ResponsiveContainer width="100%" height="100%">
-                      <AreaChart data={liveData}>
+                      <AreaChart data={initialChartData}>
                         <defs>
                           <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
                             <stop offset="5%" stopColor="hsl(var(--accent))" stopOpacity={0.3}/>
