@@ -99,7 +99,7 @@ export default function Dashboard() {
         <div className="flex-1 flex flex-col items-center justify-center py-24 glass-card rounded-3xl border-dashed border-2 border-white/10">
           <Zap className="h-16 w-16 text-muted-foreground mb-4 opacity-20" />
           <h2 className="text-2xl font-bold text-muted-foreground">Data Stream Inactive</h2>
-          <p className="text-muted-foreground mb-6">Connect to the national sovereign stream to view real-time metrics.</p>
+          <p className="text-muted-foreground mb-6 text-center max-w-md px-6">Connect to the national sovereign stream to view real-time metrics and manual sensor analysis.</p>
           <Button onClick={handleConnect} size="lg" className="emerald-gradient border-0 font-bold px-10">
             Initialize Real-time Ingestion
           </Button>
