@@ -3,9 +3,9 @@
   "placeholderImages": [
     {
       "id": "hackathon-banner",
-      "description": "Hack For Green Bharat - India's First AI Sustainability Hackathon",
-      "imageUrl": "https://picsum.photos/seed/green-bharat-banner-2024/1200/300",
-      "imageHint": "hackathon banner sustainability"
+      "description": "Official Banner for Hack For Green Bharat Hackathon 2024",
+      "imageUrl": "https://picsum.photos/seed/green-bharat-hackathon-hero/1200/400",
+      "imageHint": "sustainability hackathon"
     }
   ]
 }

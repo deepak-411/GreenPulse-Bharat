@@ -83,7 +83,7 @@ export default function Dashboard() {
         </div>
         <div className="flex items-center gap-2">
           {status === 'idle' ? (
-            <Button onClick={handleConnect} className="emerald-gradient border-0">
+            <Button onClick={handleConnect} className="emerald-gradient border-0 shadow-lg shadow-accent/20">
               <Play className="mr-2 h-4 w-4" /> Start Live Stream
             </Button>
           ) : (
