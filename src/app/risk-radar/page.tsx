@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useState } from "react"
@@ -28,7 +29,6 @@ export default function RiskRadar() {
     if (!searchQuery.trim()) return
     setIsAnalyzing(true)
     try {
-      // Simulate analysis of zone or supply chain
       const res = await predictiveCarbonRiskRadar({
         zoneId: searchQuery.includes('zone') || !searchQuery.includes('chain') ? searchQuery : undefined,
         supplyChainId: searchQuery.includes('chain') ? searchQuery : undefined,
@@ -51,12 +51,8 @@ export default function RiskRadar() {
           </div>
           <div>
             <h1 className="text-3xl font-bold">Predictive Risk Radar</h1>
-            <p className="text-muted-foreground">72-Hour forecasting using Pathway temporal logic</p>
+            <p className="text-muted-foreground">72-Hour forecasting analysis</p>
           </div>
-        </div>
-        <div className="flex items-center gap-2">
-           <Badge variant="outline" className="border-accent/50">ML Drift: 0.02%</Badge>
-           <Badge variant="outline" className="border-accent/50">Active Sensors: 10M+</Badge>
         </div>
       </div>
 
@@ -73,22 +69,13 @@ export default function RiskRadar() {
               />
             </div>
             <Button onClick={handlePredict} disabled={isAnalyzing} className="h-12 px-8 emerald-gradient border-0 text-white font-bold">
-              {isAnalyzing ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Analyzing Stream...</> : "Run Forecast Analysis"}
+              {isAnalyzing ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Analyzing...</> : "Run Forecast Analysis"}
             </Button>
-          </div>
-          <div className="flex flex-wrap gap-2 mt-4">
-            <span className="text-xs text-muted-foreground mr-2">Quick Shortcuts:</span>
-            {["Mumbai Zone-4", "Gujarat-Corridor-Alpha", "NH-48 Logistics", "Haldia Industrial"].map(tag => (
-              <button key={tag} onClick={() => setSearchQuery(tag)} className="text-[10px] px-2 py-1 rounded-full bg-white/5 border border-white/10 hover:border-accent/50 transition-colors">
-                {tag}
-              </button>
-            ))}
           </div>
         </CardContent>
       </Card>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Left Column - Main Prediction */}
         <div className="lg:col-span-2 flex flex-col gap-6">
           {prediction ? (
             <Card className="glass-card border-0 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -115,7 +102,6 @@ export default function RiskRadar() {
                     <span className="text-4xl font-bold uppercase tracking-tight">
                       {prediction.likelihoodPercentage > 75 ? "CRITICAL" : prediction.likelihoodPercentage > 40 ? "ELEVATED" : "STABLE"}
                     </span>
-                    <Badge variant="outline" className="mt-2 border-accent/20">Action Required</Badge>
                   </div>
                 </div>
 
@@ -153,54 +139,20 @@ export default function RiskRadar() {
               </div>
               <div>
                 <h3 className="text-xl font-bold">No Active Analysis</h3>
-                <p className="text-sm text-muted-foreground max-w-xs">Enter a zone or supply chain ID above to run a real-time carbon risk forecast.</p>
+                <p className="text-sm text-muted-foreground max-w-xs">No data existed. Enter a zone or supply chain ID above to run a manual carbon risk forecast.</p>
               </div>
             </div>
           )}
         </div>
 
-        {/* Right Column - Context & Sidebar */}
         <div className="flex flex-col gap-6">
           <Card className="glass-card border-0">
             <CardHeader>
-              <CardTitle className="text-lg">Risk Hotspots</CardTitle>
-              <CardDescription>Live regional risk levels</CardDescription>
+              <CardTitle className="text-lg">Hotspot Insights</CardTitle>
+              <CardDescription>Real-time data required</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
-              {[
-                { name: "NCR Industrial", level: 82, trend: "up" },
-                { name: "Mumbai Corridor", level: 45, trend: "down" },
-                { name: "Gujarat Petro", level: 68, trend: "stable" },
-                { name: "Kolkata Port", level: 12, trend: "down" },
-              ].map((loc, i) => (
-                <div key={i} className="space-y-2">
-                  <div className="flex justify-between text-xs">
-                    <span className="font-medium">{loc.name}</span>
-                    <span className={loc.level > 70 ? 'text-red-400' : 'text-accent'}>{loc.level}% Risk</span>
-                  </div>
-                  <Progress value={loc.level} className="h-1" />
-                </div>
-              ))}
-            </CardContent>
-          </Card>
-
-          <Card className="glass-card border-0 bg-primary/10">
-            <CardHeader>
-              <CardTitle className="text-lg flex items-center gap-2">
-                <Clock className="h-5 w-5 text-accent" />
-                Historical Alerts
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {[
-                "Emission spike in Vapi Zone detected 4h ago",
-                "Logistics bottleneck NH-48 cleared",
-                "PM2.5 threshold warning Noida (resolved)",
-              ].map((msg, i) => (
-                <div key={i} className="text-[11px] p-2 bg-background/50 rounded-lg border border-white/5 opacity-80">
-                  {msg}
-                </div>
-              ))}
+            <CardContent>
+              <p className="text-sm text-muted-foreground">Run a search to populate regional insights based on live sensor telemetry.</p>
             </CardContent>
           </Card>
         </div>
