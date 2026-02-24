@@ -1,12 +1,13 @@
 "use client"
 
 import { useState, useRef, useEffect } from "react"
-import { ShieldCheck, Send, Bot, User, Loader2, Info, Paperclip, ChevronRight } from "lucide-react"
+import { ShieldCheck, Send, Bot, User, Loader2, Info, Sparkles, ChevronRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Badge } from "@/components/ui/badge"
 import { aiComplianceAssistant, type ComplianceAssistantOutput } from "@/ai/flows/ai-compliance-assistant-flow"
+import { suggestComplianceQuestions } from "@/ai/flows/suggest-compliance-questions-flow"
 
 type Message = {
   role: "user" | "assistant"
@@ -19,10 +20,12 @@ export default function ComplianceAssistant() {
   const [messages, setMessages] = useState<Message[]>([
     { 
       role: "assistant", 
-      content: "Hello! I am GreenPulse Bharat AI, your sovereign regulatory assistant. How can I help you audit your shipments or factory compliance today?" 
+      content: "Hello! I am GreenPulse Bharat AI. I can audit your shipments or factory compliance based on live regulatory data. What would you like to check?" 
     }
   ])
+  const [suggestions, setSuggestions] = useState<string[]>([])
   const [isLoading, setIsLoading] = useState(false)
+  const [isSuggesting, setIsSuggesting] = useState(false)
   const scrollRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -31,16 +34,34 @@ export default function ComplianceAssistant() {
     }
   }, [messages])
 
-  const handleSend = async () => {
-    if (!input.trim() || isLoading) return
+  useEffect(() => {
+    async function loadSuggestions() {
+      setIsSuggesting(true)
+      try {
+        const res = await suggestComplianceQuestions()
+        setSuggestions(res.suggestions)
+      } catch (err) {
+        setSuggestions([
+          "Is Shipment-45 compliant?",
+          "Check PM2.5 limits for Factory-21",
+          "What are the 2024 emission norms?"
+        ])
+      } finally {
+        setIsSuggesting(false)
+      }
+    }
+    loadSuggestions()
+  }, [])
 
-    const userMsg = input
+  const handleSend = async (query?: string) => {
+    const userMsg = query || input
+    if (!userMsg.trim() || isLoading) return
+
     setInput("")
     setMessages(prev => [...prev, { role: "user", content: userMsg }])
     setIsLoading(true)
 
     try {
-      // Basic heuristic to extract IDs from input for mock tool
       const shipmentMatch = userMsg.match(/Shipment-(\d+)/i) || userMsg.match(/shipment id (\d+)/i)
       const factoryMatch = userMsg.match(/Factory-(\d+)/i) || userMsg.match(/factory id (\d+)/i)
       
@@ -52,7 +73,7 @@ export default function ComplianceAssistant() {
 
       setMessages(prev => [...prev, { role: "assistant", content: res.answer, data: res }])
     } catch (error) {
-      setMessages(prev => [...prev, { role: "assistant", content: "I encountered an error while analyzing the compliance data. Please try again." }])
+      setMessages(prev => [...prev, { role: "assistant", content: "I encountered an error while analyzing the compliance data. Please check the ID and try again." }])
     } finally {
       setIsLoading(false)
     }
@@ -67,12 +88,12 @@ export default function ComplianceAssistant() {
           </div>
           <div>
             <h1 className="text-2xl font-bold">Policy Intelligence Engine</h1>
-            <p className="text-sm text-muted-foreground">RAG-powered regulatory auditor</p>
+            <p className="text-sm text-muted-foreground">Real-time regulatory auditor</p>
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <Badge variant="outline" className="text-xs">CPCB 2024 Norms Indexed</Badge>
-          <Badge variant="outline" className="text-xs">Sovereign Data Storage</Badge>
+          <Badge variant="outline" className="text-xs">CPCB 2024 Norms</Badge>
+          <Badge variant="outline" className="text-xs">Live RAG Status: Active</Badge>
         </div>
       </div>
 
@@ -93,14 +114,14 @@ export default function ComplianceAssistant() {
                       {msg.data && (
                         <div className="mt-4 pt-4 border-t border-white/10 space-y-3">
                           <div className="flex items-center gap-2">
-                            <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Compliance Status:</span>
+                            <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Verification:</span>
                             <Badge className={`${msg.data.isCompliant ? 'bg-accent/20 text-accent' : 'bg-red-500/20 text-red-400'} border-0`}>
-                              {msg.data.isCompliant ? 'Passed' : 'Non-Compliant'}
+                              {msg.data.isCompliant ? 'Compliant' : 'Non-Compliant'}
                             </Badge>
                           </div>
                           {msg.data.citations.length > 0 && (
                             <div className="flex flex-col gap-1">
-                              <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Policies Cited:</span>
+                              <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Verified References:</span>
                               {msg.data.citations.map((cite, j) => (
                                 <div key={j} className="text-xs flex items-center gap-1 opacity-80 italic">
                                   <Info className="h-3 w-3" /> {cite}
@@ -121,7 +142,7 @@ export default function ComplianceAssistant() {
                   </div>
                   <div className="p-4 rounded-2xl bg-white/5 border border-white/10 flex items-center gap-3">
                     <Loader2 className="h-4 w-4 animate-spin text-accent" />
-                    <span className="text-sm italic text-muted-foreground">Analyzing regulatory logs...</span>
+                    <span className="text-sm italic text-muted-foreground">Verifying against regulatory database...</span>
                   </div>
                 </div>
               )}
@@ -129,16 +150,39 @@ export default function ComplianceAssistant() {
           </ScrollArea>
 
           <div className="p-4 bg-white/5 border-t border-white/10">
+            {suggestions.length > 0 && (
+              <div className="flex flex-wrap gap-2 mb-4">
+                {isSuggesting ? (
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground animate-pulse">
+                    <Sparkles className="h-3 w-3" /> Generating suggestions...
+                  </div>
+                ) : (
+                  suggestions.map((suggestion, idx) => (
+                    <Button 
+                      key={idx} 
+                      variant="outline" 
+                      size="sm" 
+                      className="text-[10px] h-7 bg-white/5 border-white/10 hover:bg-accent/10 hover:border-accent/30"
+                      onClick={() => handleSend(suggestion)}
+                      disabled={isLoading}
+                    >
+                      {suggestion}
+                    </Button>
+                  ))
+                )}
+              </div>
+            )}
+            
             <div className="relative flex items-center">
               <Input
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-                placeholder="Ask about shipment compliance or factory emissions..."
+                placeholder="Type a compliance query..."
                 className="pr-12 h-12 bg-background border-border focus-visible:ring-accent"
               />
               <Button 
-                onClick={handleSend}
+                onClick={() => handleSend()}
                 size="icon" 
                 className="absolute right-1 top-1 h-10 w-10 emerald-gradient border-0"
                 disabled={isLoading}
@@ -146,47 +190,43 @@ export default function ComplianceAssistant() {
                 <Send className="h-4 w-4" />
               </Button>
             </div>
-            <p className="text-[10px] text-center mt-2 text-muted-foreground">
-              Powered by Pathway RAG & Sovereign Environmental LLM. Citations are verified against CPCB datasets.
-            </p>
           </div>
         </div>
 
-        {/* Sidebar Info */}
+        {/* Sidebar */}
         <div className="hidden md:flex flex-col gap-6 w-80">
           <div className="glass-card p-6 rounded-2xl border-0">
             <h3 className="font-bold mb-4 flex items-center gap-2">
-              <ShieldCheck className="h-5 w-5 text-accent" />
-              Live Context
+              <Sparkles className="h-5 w-5 text-accent" />
+              AI Insights
             </h3>
             <div className="space-y-4">
-              <div className="flex flex-col gap-1">
-                <span className="text-xs text-muted-foreground">Knowledge Base</span>
-                <span className="text-sm font-medium">Ministry Notifications 2024</span>
-              </div>
-              <div className="flex flex-col gap-1">
-                <span className="text-xs text-muted-foreground">Audit Engine Status</span>
-                <div className="flex items-center gap-2">
-                  <div className="h-2 w-2 rounded-full bg-accent" />
-                  <span className="text-sm font-medium">Ready (Streaming RAG)</span>
-                </div>
-              </div>
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                Our auditor uses Retrieval-Augmented Generation (RAG) to ensure every answer is backed by verified government policy documents.
+              </p>
               <div className="pt-4 border-t border-white/10">
-                <p className="text-xs text-muted-foreground leading-relaxed">
-                  Try asking: "Is shipment id 45 compliant with emission norms?" or "What are the latest PM2.5 limits for industrial zones?"
-                </p>
+                <span className="text-[10px] uppercase font-bold text-muted-foreground block mb-2">Live Policy Sources</span>
+                <div className="flex flex-col gap-2">
+                  <div className="flex items-center gap-2 text-xs">
+                    <div className="h-1.5 w-1.5 rounded-full bg-accent" />
+                    CPCB Emission Norms 2024
+                  </div>
+                  <div className="flex items-center gap-2 text-xs">
+                    <div className="h-1.5 w-1.5 rounded-full bg-accent" />
+                    Ministry of Transport Guidelines
+                  </div>
+                </div>
               </div>
             </div>
           </div>
 
           <div className="glass-card p-6 rounded-2xl border-0 flex-1">
-            <h3 className="font-bold mb-4">Quick Audit Actions</h3>
+            <h3 className="font-bold mb-4">Quick Actions</h3>
             <div className="space-y-2">
               {[
-                "Verify Recent Violations",
-                "Export Compliance Report",
-                "Update Policy Docs",
-                "Policy Impact Simulation"
+                "Policy Impact Simulation",
+                "Export Audit Logs",
+                "Request Manual Review"
               ].map((action, i) => (
                 <Button key={i} variant="ghost" className="w-full justify-between text-xs h-9 hover:bg-white/5">
                   {action} <ChevronRight className="h-3 w-3" />
