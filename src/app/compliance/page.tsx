@@ -2,7 +2,7 @@
 "use client"
 
 import { useState, useRef, useEffect } from "react"
-import { ShieldCheck, Send, Bot, User, Loader2, Info, Sparkles, ChevronRight, MessageSquare } from "lucide-react"
+import { ShieldCheck, Send, Bot, User, Loader2, Info, Sparkles, MessageSquare } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { ScrollArea } from "@/components/ui/scroll-area"
@@ -87,27 +87,42 @@ export default function ComplianceAssistant() {
             <p className="text-sm text-muted-foreground">Real-time regulatory auditor</p>
           </div>
         </div>
-        <div className="flex items-center gap-2">
-          <Badge variant="outline" className="text-xs">CPCB 2024 Norms</Badge>
-          <Badge variant="outline" className="text-xs">Live RAG Status: Active</Badge>
-        </div>
       </div>
 
       <div className="flex-1 flex flex-col md:flex-row gap-6 min-h-0">
-        {/* Main Chat Area */}
         <div className="flex-1 flex flex-col glass-card rounded-2xl border-0 overflow-hidden">
           <ScrollArea ref={scrollRef} className="flex-1 p-6">
             {messages.length === 0 ? (
-              <div className="h-full flex flex-col items-center justify-center text-center p-8 gap-4 opacity-60">
-                <div className="p-4 bg-white/5 rounded-full">
-                  <Bot className="h-12 w-12 text-accent" />
+              <div className="h-full flex flex-col items-center justify-center text-center p-8 gap-6">
+                <div className="p-6 bg-accent/10 rounded-full animate-pulse">
+                  <Bot className="h-16 w-16 text-accent" />
                 </div>
-                <div>
-                  <h3 className="text-xl font-bold">Ready for Audit</h3>
-                  <p className="text-sm max-w-xs mx-auto">
-                    Ask me about shipment compliance or factory emission norms. I verify everything against live policy documents.
+                <div className="max-w-md">
+                  <h3 className="text-2xl font-bold mb-2">Policy Auditor Ready</h3>
+                  <p className="text-muted-foreground leading-relaxed">
+                    Ask any question about environmental compliance, shipment tracking, or factory emission limits.
                   </p>
                 </div>
+                
+                {suggestions.length > 0 && (
+                  <div className="w-full max-w-lg mt-4">
+                    <p className="text-xs font-bold uppercase text-accent mb-3 tracking-widest flex items-center justify-center gap-2">
+                      <Sparkles className="h-4 w-4" /> AI Suggested Questions
+                    </p>
+                    <div className="grid grid-cols-1 gap-2">
+                      {suggestions.map((suggestion, idx) => (
+                        <Button 
+                          key={idx} 
+                          variant="outline" 
+                          className="justify-start h-auto py-3 px-4 text-sm bg-white/5 border-white/10 hover:border-accent/50 text-left whitespace-normal"
+                          onClick={() => handleSend(suggestion)}
+                        >
+                          {suggestion}
+                        </Button>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             ) : (
               <div className="flex flex-col gap-6">
@@ -117,23 +132,23 @@ export default function ComplianceAssistant() {
                       {msg.role === 'assistant' ? <Bot className="h-6 w-6 text-primary" /> : <User className="h-6 w-6 text-accent" />}
                     </div>
                     <div className={`flex flex-col gap-2 max-w-[80%] ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
-                      <div className={`p-4 rounded-2xl text-sm leading-relaxed ${msg.role === 'assistant' ? 'bg-white/5 border border-white/10' : 'emerald-gradient text-white'}`}>
+                      <div className={`p-4 rounded-2xl text-sm leading-relaxed ${msg.role === 'assistant' ? 'bg-white/5 border border-white/10' : 'emerald-gradient text-white shadow-lg'}`}>
                         {msg.content}
                         
                         {msg.data && (
                           <div className="mt-4 pt-4 border-t border-white/10 space-y-3">
                             <div className="flex items-center gap-2">
-                              <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Verification:</span>
+                              <span className="text-xs font-bold uppercase tracking-wider opacity-60">Status:</span>
                               <Badge className={`${msg.data.isCompliant ? 'bg-accent/20 text-accent' : 'bg-red-500/20 text-red-400'} border-0`}>
-                                {msg.data.isCompliant ? 'Compliant' : 'Non-Compliant'}
+                                {msg.data.isCompliant ? 'Verified Compliant' : 'Non-Compliant Alert'}
                               </Badge>
                             </div>
                             {msg.data.citations.length > 0 && (
                               <div className="flex flex-col gap-1">
-                                <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Verified References:</span>
+                                <span className="text-xs font-bold uppercase tracking-wider opacity-60">Policy Citations:</span>
                                 {msg.data.citations.map((cite, j) => (
-                                  <div key={j} className="text-xs flex items-center gap-1 opacity-80 italic">
-                                    <Info className="h-3 w-3" /> {cite}
+                                  <div key={j} className="text-xs flex items-center gap-2 opacity-80 italic bg-black/20 p-2 rounded">
+                                    <Info className="h-3 w-3 shrink-0" /> {cite}
                                   </div>
                                 ))}
                               </div>
@@ -151,7 +166,7 @@ export default function ComplianceAssistant() {
                     </div>
                     <div className="p-4 rounded-2xl bg-white/5 border border-white/10 flex items-center gap-3">
                       <Loader2 className="h-4 w-4 animate-spin text-accent" />
-                      <span className="text-sm italic text-muted-foreground">Verifying against regulatory database...</span>
+                      <span className="text-sm italic text-muted-foreground">Running AI Policy Audit...</span>
                     </div>
                   </div>
                 )}
@@ -160,76 +175,42 @@ export default function ComplianceAssistant() {
           </ScrollArea>
 
           <div className="p-4 bg-white/5 border-t border-white/10">
-            {suggestions.length > 0 && (
-              <div className="flex flex-wrap gap-2 mb-4">
-                <div className="flex items-center gap-2 text-xs text-muted-foreground font-bold mr-2">
-                  <Sparkles className="h-3 w-3 text-accent" /> AI Suggested:
-                </div>
-                {isSuggesting ? (
-                  <div className="flex items-center gap-2 text-xs text-muted-foreground animate-pulse">
-                    Generating...
-                  </div>
-                ) : (
-                  suggestions.map((suggestion, idx) => (
-                    <Button 
-                      key={idx} 
-                      variant="outline" 
-                      size="sm" 
-                      className="text-[10px] h-7 bg-white/5 border-white/10 hover:bg-accent/10 hover:border-accent/30 rounded-full"
-                      onClick={() => handleSend(suggestion)}
-                      disabled={isLoading}
-                    >
-                      {suggestion}
-                    </Button>
-                  ))
-                )}
-              </div>
-            )}
-            
             <div className="relative flex items-center">
               <Input
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-                placeholder="Type a compliance query or pick a suggestion..."
-                className="pr-12 h-12 bg-background border-border focus-visible:ring-accent"
+                placeholder="Ask a compliance question..."
+                className="pr-12 h-14 bg-background border-border text-lg"
               />
               <Button 
                 onClick={() => handleSend()}
                 size="icon" 
-                className="absolute right-1 top-1 h-10 w-10 emerald-gradient border-0"
+                className="absolute right-1.5 top-1.5 h-11 w-11 emerald-gradient border-0"
                 disabled={isLoading}
               >
-                <Send className="h-4 w-4" />
+                <Send className="h-5 w-5" />
               </Button>
             </div>
           </div>
         </div>
 
-        {/* Sidebar */}
         <div className="hidden md:flex flex-col gap-6 w-80">
           <div className="glass-card p-6 rounded-2xl border-0">
             <h3 className="font-bold mb-4 flex items-center gap-2">
               <MessageSquare className="h-5 w-5 text-accent" />
-              How it works
+              Intelligence Source
             </h3>
-            <div className="space-y-4">
-              <p className="text-xs text-muted-foreground leading-relaxed">
-                Our auditor uses **Retrieval-Augmented Generation (RAG)**. It searches national environmental policy docs in real-time to answer your queries with citations.
-              </p>
-              <div className="pt-4 border-t border-white/10">
-                <span className="text-[10px] uppercase font-bold text-muted-foreground block mb-2">Policy Datasets</span>
-                <div className="flex flex-col gap-2">
-                  <div className="flex items-center gap-2 text-xs">
-                    <div className="h-1.5 w-1.5 rounded-full bg-accent" />
-                    CPCB Norms 2024
-                  </div>
-                  <div className="flex items-center gap-2 text-xs">
-                    <div className="h-1.5 w-1.5 rounded-full bg-accent" />
-                    Logistics Emissions v2
-                  </div>
-                </div>
-              </div>
+            <p className="text-xs text-muted-foreground leading-relaxed mb-4">
+              Answers are generated using **Sovereign RAG** (Retrieval-Augmented Generation) based on the latest 2024 CPCB and Ministry notifications.
+            </p>
+            <div className="pt-4 border-t border-white/10 space-y-2">
+              <Badge variant="outline" className="w-full justify-start text-[10px] py-1 border-accent/20">
+                • 2024 National Emission Norms
+              </Badge>
+              <Badge variant="outline" className="w-full justify-start text-[10px] py-1 border-accent/20">
+                • Logistics Efficiency Standards v2
+              </Badge>
             </div>
           </div>
         </div>
